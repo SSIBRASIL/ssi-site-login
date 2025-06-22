@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SSI Brasil - Login Protegido</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      background-color: #f5f5f5;
+    }
+    .tela-login {
+      margin-top: 100px;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 250px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+    }
+    #site-content {
+      display: none;
+    }
+    .link {
+      margin-top: 10px;
+      display: block;
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Tela de login -->
+  <div id="login-container" class="tela-login">
+    <h2>Login</h2>
+    <input type="text" id="nome" placeholder="Nome completo"><br>
+    <input type="tel" id="telefone" placeholder="Telefone"><br>
+    <input type="email" id="email" placeholder="Digite seu email"><br>
+    <input type="password" id="senha" placeholder="Digite sua senha"><br>
+    <button onclick="loginUser()">Entrar</button>
+    <a class="link" onclick="cadastrarUsuario()">Criar nova conta</a>
+    <a class="link" onclick="resetarSenha()">Esqueci minha senha</a>
+  </div>
+
+  <!-- Conteúdo do site só após login -->
+  <div id="site-content">
+    <h1>Bem-vindo à SSI Brasil</h1>
+    <p>Conteúdo visível apenas para usuários autenticados.</p>
+    <nav>
+      <a href="protegido_sobre.html">Sobre Nós</a> |
+      <a href="protegido_servicos.html">Serviços</a> |
+      <a href="protegido_portifolio.html">Portfólio</a> |
+      <a href="protegido_parceiros.html">Parceiros</a> |
+      <a href="protegido_contato.html">Contato</a>
+    </nav>
+  </div>
+
+  <button id="logout-button" onclick="logoutUser()" style="display:none; position:fixed;top:10px;right:10px;">Sair</button>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://motqggvxplegckxuvujc.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdHFnZ3Z4cGxlZ2NreHV2dWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzOTY4MjMsImV4cCI6MjA2NTk3MjgyM30.C1DLQis5upgmaPeTXgt-rMztlTeAm5ODKjVC_XhC4-o'
+    );
+
+    async function loginUser() {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+      if (error || !data.session) {
+        alert("Erro ao logar ou email não confirmado. Verifique sua caixa de entrada.");
+      } else {
+        location.reload();
+      }
+    }
+
+    async function cadastrarUsuario() {
+      const nome = document.getElementById("nome").value;
+      const telefone = document.getElementById("telefone").value;
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      const { error } = await supabase.auth.signUp({ email, password: senha });
+      if (error) {
+        alert("Erro ao cadastrar: " + error.message);
+      } else {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData?.session?.user?.id;
+        if (userId) {
+          await supabase.from("profiles").insert([{ id: userId, nome, telefone }]);
+        }
+        alert("Conta criada! Verifique seu email para confirmar antes de fazer login.");
+      }
+    }
+
+    async function resetarSenha() {
+      const email = document.getElementById("email").value;
+      if (!email) {
+        alert("Digite seu email para redefinir a senha.");
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        alert("Erro ao enviar link de redefinição: " + error.message);
+      } else {
+        alert("Verifique seu email para redefinir a senha.");
+      }
+    }
+
+    async function logoutUser() {
+      await supabase.auth.signOut();
+      location.reload();
+    }
+
+    async function verificarLogin() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("site-content").style.display = "block";
+        document.getElementById("logout-button").style.display = "block";
+      } else {
+        document.getElementById("login-container").style.display = "block";
+        document.getElementById("site-content").style.display = "none";
+        document.getElementById("logout-button").style.display = "none";
+      }
+    }
+
+    window.onload = verificarLogin;
+  </script>
+
+</body>
+</html>

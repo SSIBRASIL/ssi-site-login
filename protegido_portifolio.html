@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <style>
+    body {
+      background-image: url('logo_marcadagua.jpeg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: 300px;
+      opacity: 1;
+    }
+  </style>
+  <meta charset="UTF-8" />
+  <title>Portfólio - SSI BRASIL</title>
+  <link rel="stylesheet" href="style.css" />
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabase = supabase.createClient(
+    'https://motqggvxplegckxuvujc.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdHFnZ3Z4cGxlZ2NreHV2dWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzOTY4MjMsImV4cCI6MjA2NTk3MjgyM30.C1DLQis5upgmaPeTXgt-rMztlTeAm5ODKjVC_XhC4-o'
+  );
+
+  async function verificarLogin() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = "index.html";  // redireciona para login
+    }
+  }
+
+  window.onload = verificarLogin;
+</script>
+</head>
+<body>
+  <header><h1>Portfólio</h1></header>
+  <main>
+    <p>Confira nossos projetos de automação realizados com grandes marcas. (Espaço reservado para imagens)</p>
+  </main>
+  <a href='index.html'>Voltar</a>
+<button onclick="supabase.auth.signOut().then(() => window.location.href = 'index.html')" style="position:fixed;top:10px;right:10px;">Sair</button></body>
+</html>
